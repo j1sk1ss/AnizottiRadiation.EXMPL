@@ -2,3 +2,9 @@ name: AnizottiRadiation
 version: '${project.version}'
 main: org.cordell.com.anizottiradiation.AnizottiRadiation
 api-version: '1.21'
+
+
+commands:
+  add_radiation_area:
+    description: "Adds a new radioactive area."
+    usage: "/add_radiation_area <x1> <y1> <z1> <x2> <y2> <z2>"
