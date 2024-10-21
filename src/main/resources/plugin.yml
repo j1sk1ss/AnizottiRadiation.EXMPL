@@ -1,0 +1,4 @@
+name: AnizottiRadiation
+version: '${project.version}'
+main: org.cordell.com.anizottiradiation.AnizottiRadiation
+api-version: '1.21'
