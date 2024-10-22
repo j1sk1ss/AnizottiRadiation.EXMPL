@@ -6,13 +6,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.potion.PotionEffectType;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+import static org.cordell.com.anizottiradiation.AnizottiRadiation.dataManager;
 import static org.cordell.com.anizottiradiation.events.Infection.*;
 
 
@@ -40,7 +43,16 @@ public class PlayerEventHandler implements Listener {
 
 
     @EventHandler
-    public void onPlayerDeath(PlayerDeathEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) throws IOException {
+        var player = event.getPlayer();
+        var infectionLevel = dataManager.getInt(player.getName());
+        if (infectionLevel != -1) {
+            infectedPlayers.put(player, infectionLevel);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) throws IOException {
         var player = event.getEntity();
         infectedPlayers.remove(player);
 
@@ -49,6 +61,8 @@ public class PlayerEventHandler implements Listener {
                 for (var task : infectionTasks.get(player)) task.cancel();
                 infectionTasks.remove(player);
             }
+
+            dataManager.deleteRecord(player.getName());
         }
 
         if (player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH) != null) {

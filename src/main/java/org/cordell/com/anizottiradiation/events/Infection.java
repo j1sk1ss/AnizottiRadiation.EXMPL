@@ -9,25 +9,30 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.bukkit.Bukkit.getServer;
+import static org.cordell.com.anizottiradiation.AnizottiRadiation.dataManager;
 
 public class Infection {
     public static final Map<Player, Integer> infectedPlayers = new HashMap<>();
     public static final Map<Player, ArrayList<BukkitTask>> infectionTasks = new HashMap<>();
 
-    public static void startInfection(Player player) {
+    public static void startInfection(Player player) throws IOException {
         if (player == null) return;
-        var list = new ArrayList<BukkitTask>();
+        if (infectionTasks.containsKey(player)) return;
 
-        int infectionLevel = infectedPlayers.get(player);
-        System.out.println("Start infection for " + player.getName() + "\nLevel " + infectionLevel);
+        var list = new ArrayList<BukkitTask>();
+        var infectionLevel = infectedPlayers.get(player);
+
+        System.out.println("Start infection for " + player.getName() + "\tLevel " + infectionLevel);
         if (infectionLevel < 3) {
             infectedPlayers.remove(player);
             return;
         }
 
+        dataManager.setInt(player.getName(), infectionLevel);
         list.add(applyInfection(player));
         list.add(applyRadiationParticles(player));
         list.add(applyRadiationToNearby(player));
@@ -41,6 +46,11 @@ public class Infection {
 
             int infectionLevel = infectedPlayers.get(player);
             infectedPlayers.put(player, infectionLevel + 1);
+            try {
+                dataManager.setInt(player.getName(), infectionLevel + 1);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
             if (infectionLevel <= 6) {
                 var maxHealth = Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getBaseValue();
@@ -65,7 +75,7 @@ public class Infection {
             var location = player.getLocation();
             player.spawnParticle(
                     Particle.DUST, location.getX(), location.getY() + 1, location.getZ(),
-                    0, 1, 1, 0, 1, new Particle.DustOptions(Color.fromRGB(0, 255, 0), 1.0F)
+                    1, 1, 1, 0, 5, new Particle.DustOptions(Color.fromRGB(0, 255, 0), 2.0F)
             );
         }, 0, 100);
     }

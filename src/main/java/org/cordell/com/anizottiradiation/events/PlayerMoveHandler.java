@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.cordell.com.anizottiradiation.common.ArmorManager;
 import org.cordell.com.anizottiradiation.objects.Area;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -23,7 +24,7 @@ public class PlayerMoveHandler implements Listener {
     public static Hashtable<Player, Area> players = new Hashtable<>();
 
     @EventHandler
-    public void onPlayerMove(PlayerMoveEvent e) {
+    public void onPlayerMove(PlayerMoveEvent e) throws IOException {
         var player = e.getPlayer();
         for (var area : areas) {
             if (isInRegion(player.getLocation(), area.getFirstLocation(), area.getSecondLocation())) {
