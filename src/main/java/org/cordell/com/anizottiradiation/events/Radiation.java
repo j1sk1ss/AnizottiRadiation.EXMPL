@@ -93,9 +93,10 @@ public class Radiation {
 
             player.sendMessage("Надо бежать!");
             infectedPlayers.merge(player, 3, Math::max);
-
             for (var item : player.getInventory()) {
-                Manager.setInteger2Container(item, 1, "infected");
+                if (item == null) continue;
+                if (item.getItemMeta() == null) continue;
+                Manager.setInteger2Container(item, 3, "infected");
             }
         }
     }
@@ -136,7 +137,7 @@ public class Radiation {
             public void run() {
                 for (var area : areas) {
                     try {
-                        area.expandArea(new Random().nextInt(5));
+                        area.expandArea(new Random().nextInt(3));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

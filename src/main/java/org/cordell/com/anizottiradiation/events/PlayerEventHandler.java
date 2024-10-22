@@ -6,7 +6,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.potion.PotionEffectType;
@@ -77,13 +79,32 @@ public class PlayerEventHandler implements Listener {
     }
 
     @EventHandler
-    public void onItemPickup(PlayerPickupItemEvent event) throws IOException {
-        var player = event.getPlayer();
+    public void onItemPickup(EntityPickupItemEvent event) throws IOException {
+        var entity = event.getEntity();
+        if (entity instanceof Player player) {
+            if (infectionTasks.containsKey(player)) return;
+
+            var infectedFlag = Manager.getIntegerFromContainer(event.getItem().getItemStack(), "infected");
+            if (infectedFlag == 1) {
+                infectedPlayers.put(player, 1);
+                startInfection(player);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onItemTake(InventoryClickEvent event) throws IOException {
+        var player = (Player)event.getWhoClicked();
+        var item = event.getCurrentItem();
+        if (item == null) return;
+        if (item.getItemMeta() == null) return;
+
         if (infectionTasks.containsKey(player)) return;
 
-        var infectedFlag = Manager.getIntegerFromContainer(event.getItem().getItemStack(), "infected");
-        if (infectedFlag == 1) {
-            infectedPlayers.put(player, 1);
+        var infectedFlag = Manager.getIntegerFromContainer(item, "infected");
+        System.out.println("infected: " + infectedFlag + " Player: " + player.getName());
+        if (infectedFlag != -1) {
+            infectedPlayers.put(player, infectedFlag);
             startInfection(player);
         }
     }

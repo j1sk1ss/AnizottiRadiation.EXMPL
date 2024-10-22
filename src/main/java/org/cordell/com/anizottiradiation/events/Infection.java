@@ -28,6 +28,7 @@ public class Infection {
         var infectionLevel = infectedPlayers.get(player);
 
         System.out.println("Start infection for " + player.getName() + "\tLevel " + infectionLevel);
+        if (infectionLevel == null) return;
         if (infectionLevel < 3) {
             infectedPlayers.remove(player);
             return;
