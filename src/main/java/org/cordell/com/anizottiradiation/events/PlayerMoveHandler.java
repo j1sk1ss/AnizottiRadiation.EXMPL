@@ -19,17 +19,20 @@ public class PlayerMoveHandler implements Listener {
     public void onPlayerMove(PlayerMoveEvent e) throws IOException {
         var player = e.getPlayer();
         for (var area : Radiation.areas) {
+            if (area.getHp() <= 0) continue;
             if (area.isInRegion(player.getLocation())) {
                 if (!Radiation.players.containsKey(player)) {
                     Radiation.players.put(player, area);
                     startRadiationEffect(player, area);
-                    player.sendMessage("Что-то не то...");
+
+                    player.sendMessage("Не вышло?");
+                    area.getHpBar().addPlayer(player);
                 }
                 else {
                     if (LocationManager.isInWater(player)) {
-                        var hasArmor = ArmorManager.damagePlayerArmor(player, 5);
+                        var hasArmor = ArmorManager.damagePlayerArmor(player, 2);
                         if (hasArmor) player.playSound(player.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 1.0f, 1.0f);
-                        else player.damage(0.5);
+                        else player.damage(1);
                     }
                 }
             }
@@ -37,8 +40,9 @@ public class PlayerMoveHandler implements Listener {
                 if (Radiation.players.containsKey(player)) {
                     Radiation.players.remove(player);
                     endRadiationEffect(player);
-                    player.sendMessage("Пронесло?");
 
+                    player.sendMessage("Что ты с моим радиоктивным фоном сделал?");
+                    area.getHpBar().removePlayer(player);
                     Infection.startInfection(player);
                 }
             }

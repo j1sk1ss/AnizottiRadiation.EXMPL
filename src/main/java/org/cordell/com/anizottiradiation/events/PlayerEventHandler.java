@@ -1,6 +1,7 @@
 package org.cordell.com.anizottiradiation.events;
 
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,6 +11,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.potion.PotionEffectType;
@@ -121,7 +123,6 @@ public class PlayerEventHandler implements Listener {
         }
 
         var infectedFlag = Manager.getIntegerFromContainer(item, "infected");
-        System.out.println("infected: " + infectedFlag + " Player: " + player.getName());
         if (infectedFlag != -1) {
             infectedPlayers.put(player, infectedFlag);
             startInfection(player);
@@ -134,7 +135,9 @@ public class PlayerEventHandler implements Listener {
         for (var area : Radiation.areas) {
             if (area.isInRegion(player, .65)) {
                 if (event.getBlock().getType() == Material.SAND) {
+                    area.damageZone(1);
                     area.expandArea(-.1);
+                    event.getBlock().setType(Material.AIR, false);
                 }
             }
         }
@@ -150,9 +153,23 @@ public class PlayerEventHandler implements Listener {
             for (var area : Radiation.areas) {
                 if (area.isInRegion(block.getLocation())) {
                     if (player.getInventory().getItemInMainHand().getType() != Material.BOOK) return;
-                    player.sendMessage("Результат: " + Math.round(area.getProximityFactor(player) * 100d) / 100d);
+                    player.sendMessage("Счётчик Гейгера: " + Math.round(area.getProximityFactor(player) * 100d) / 100d);
+                    player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CHAIN_PLACE, 1.0f, 1.0f);
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        var player = event.getPlayer();
+        var entity = event.getRightClicked();
+
+        if (entity instanceof Player clickedPlayer) {
+            if (player.getInventory().getItemInMainHand().getType() != Material.BOOK) return;
+            player.sendMessage("Уровень заражения игрока: " + infectedPlayers.get(clickedPlayer));
+            if (infectedPlayers.containsKey(clickedPlayer))
+                player.sendMessage("Для лечения попробуйте: " + cureEffect + " " + cureItem);
         }
     }
 

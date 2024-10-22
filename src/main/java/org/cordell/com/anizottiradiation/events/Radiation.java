@@ -44,9 +44,9 @@ public class Radiation {
         var leggings = player.getInventory().getLeggings();
         var boots = player.getInventory().getBoots();
 
-        ArmorManager.damageArmor(helmet, player, (int)(12 * proximityFactor));
-        ArmorManager.damageArmor(chestPlate, player, (int)(15 * proximityFactor));
-        ArmorManager.damageArmor(leggings, player, (int)(10 * proximityFactor));
+        ArmorManager.damageArmor(helmet, player, (int)(6 * proximityFactor));
+        ArmorManager.damageArmor(chestPlate, player, (int)(7 * proximityFactor));
+        ArmorManager.damageArmor(leggings, player, (int)(5 * proximityFactor));
         ArmorManager.damageArmor(boots, player, (int)(5 * proximityFactor));
 
         if (helmet != null && chestPlate != null && leggings != null && boots != null) {
@@ -65,10 +65,12 @@ public class Radiation {
 
             if (!isDefence) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 500, (int) (1 + 5 * proximityFactor)));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 200, 1));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 200, 2));
 
                 var maxJump = Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH)).getBaseValue();
                 Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH)).setBaseValue(Math.max(0.1, maxJump - (0.1 * proximityFactor)));
+
+                player.sendMessage("Надо уходить.");
                 infectedPlayers.merge(player, 2, Math::max);
                 for (var item : player.getInventory()) {
                     if (item == null) continue;
@@ -144,7 +146,9 @@ public class Radiation {
             public void run() {
                 for (var area : areas) {
                     try {
-                        area.expandArea(new Random().nextInt(2));
+                        var regenSize = new Random().nextInt(2);
+                        area.expandArea(regenSize);
+                        area.damageZone(-regenSize);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

@@ -27,7 +27,6 @@ public class Infection {
         var list = new ArrayList<BukkitTask>();
         var infectionLevel = infectedPlayers.get(player);
 
-        System.out.println("Start infection for " + player.getName() + "\tLevel " + infectionLevel);
         if (infectionLevel == null) return;
         if (infectionLevel < 3) {
             infectedPlayers.remove(player);
@@ -85,7 +84,7 @@ public class Infection {
                     player.setFireTicks(500);
                 }
             }
-        }, 0, 12000);
+        }, 0, 24000);
     }
 
     private static BukkitTask applyRadiationParticles(Player player) {
