@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.cordell.com.anizottiradiation.common.LocationConverter;
 
 import java.io.IOException;
@@ -31,6 +32,17 @@ public class Area {
         double centerY = (firstLocation.getY() + secondLocation.getY()) / 2;
         double centerZ = (firstLocation.getZ() + secondLocation.getZ()) / 2;
         return new Location(firstLocation.getWorld(), centerX, centerY, centerZ);
+    }
+
+    public boolean isInRegion(Player player, double min) {
+        return getProximityFactor(player) > min;
+    }
+
+    public double getProximityFactor(Player player) {
+        var center = getCenter();
+        var distance = player.getLocation().distance(center);
+        var maxDistance = center.distance(getFirstLocation());
+        return (1 - (distance / maxDistance));
     }
 
     public boolean isInRegion(Location source) {

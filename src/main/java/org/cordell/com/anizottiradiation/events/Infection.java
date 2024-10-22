@@ -31,9 +31,11 @@ public class Infection {
         if (infectionLevel == null) return;
         if (infectionLevel < 3) {
             infectedPlayers.remove(player);
+            player.damage(0.1);
             return;
         }
 
+        player.sendMessage("Чувствую себя отвартительно");
         dataManager.setInt(player.getName(), infectionLevel);
         list.add(applyInfection(player));
         list.add(applyRadiationParticles(player));
@@ -60,11 +62,27 @@ public class Infection {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 600, infectionLevel));
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 600, infectionLevel));
             }
-            else {
+            else if (infectionLevel <= 12) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 500, 5));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 200, 5));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 40, 5));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 200, 5));
+
                 Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(5);
                 var highestBlock = player.getWorld().getHighestBlockAt(player.getLocation());
                 if (player.getLocation().getY() >= highestBlock.getY() && player.getWorld().getTime() > 0 && player.getWorld().getTime() < 12300) {
                     player.setFireTicks(100);
+                }
+            }
+            else if (infectionLevel <= 18) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 500, 5));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 200, 5));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 200, 5));
+
+                Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(2);
+                var highestBlock = player.getWorld().getHighestBlockAt(player.getLocation());
+                if (player.getLocation().getY() >= highestBlock.getY() && player.getWorld().getTime() > 0 && player.getWorld().getTime() < 12300) {
+                    player.setFireTicks(500);
                 }
             }
         }, 0, 12000);

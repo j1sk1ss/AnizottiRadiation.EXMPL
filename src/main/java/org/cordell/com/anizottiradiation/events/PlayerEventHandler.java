@@ -5,14 +5,14 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.potion.PotionEffectType;
-import org.cordell.com.anizottiradiation.common.LocationManager;
 import org.j1sk1ss.itemmanager.manager.Manager;
 
 import java.io.IOException;
@@ -82,11 +82,26 @@ public class PlayerEventHandler implements Listener {
     public void onItemPickup(EntityPickupItemEvent event) throws IOException {
         var entity = event.getEntity();
         if (entity instanceof Player player) {
-            if (infectionTasks.containsKey(player)) return;
+            for (var area : Radiation.areas) {
+                if (area.isInRegion(player, .5)) {
+                    if (event.getItem().getItemStack().getItemMeta() == null) continue;
+                    Manager.setInteger2Container(event.getItem().getItemStack(), 2, "infected");
+                }
+                else if (area.isInRegion(player, .75)) {
+                    if (event.getItem().getItemStack().getItemMeta() == null) continue;
+                    Manager.setInteger2Container(event.getItem().getItemStack(), 3, "infected");
+                }
+            }
+
+            // If infected player pickup item, item will be infected
+            if (infectionTasks.containsKey(player)) {
+                Manager.setInteger2Container(event.getItem().getItemStack(), 3, "infected");
+                return;
+            }
 
             var infectedFlag = Manager.getIntegerFromContainer(event.getItem().getItemStack(), "infected");
-            if (infectedFlag == 1) {
-                infectedPlayers.put(player, 1);
+            if (infectedFlag != -1) {
+                infectedPlayers.put(player, infectedFlag);
                 startInfection(player);
             }
         }
@@ -99,7 +114,11 @@ public class PlayerEventHandler implements Listener {
         if (item == null) return;
         if (item.getItemMeta() == null) return;
 
-        if (infectionTasks.containsKey(player)) return;
+        // If infected player pickup item, item will be infected
+        if (infectionTasks.containsKey(player)) {
+            Manager.setInteger2Container(item, 3, "infected");
+            return;
+        }
 
         var infectedFlag = Manager.getIntegerFromContainer(item, "infected");
         System.out.println("infected: " + infectedFlag + " Player: " + player.getName());
@@ -113,16 +132,25 @@ public class PlayerEventHandler implements Listener {
     public void onBlockPlaced(BlockPlaceEvent event) throws IOException {
         var player = event.getPlayer();
         for (var area : Radiation.areas) {
-            if (area.isInRegion(player.getLocation())) {
-                var center = area.getCenter();
-                var distance = player.getLocation().distance(center);
-                var maxDistance = center.distance(area.getFirstLocation());
-                var proximityFactor = 1 - (distance / maxDistance);
+            if (area.isInRegion(player, .65)) {
+                if (event.getBlock().getType() == Material.SAND) {
+                    area.expandArea(-.1);
+                }
+            }
+        }
+    }
 
-                if (proximityFactor >= .65) {
-                    if (event.getBlock().getType() == Material.SAND) {
-                        area.expandArea(-.1);
-                    }
+    @EventHandler
+    public void onBlockClick(PlayerInteractEvent event) {
+        var player = event.getPlayer();
+        var block = event.getClickedBlock();
+        if (block == null) return;
+
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            for (var area : Radiation.areas) {
+                if (area.isInRegion(block.getLocation())) {
+                    if (player.getInventory().getItemInMainHand().getType() != Material.BOOK) return;
+                    player.sendMessage("Результат: " + Math.round(area.getProximityFactor(player) * 100d) / 100d);
                 }
             }
         }
