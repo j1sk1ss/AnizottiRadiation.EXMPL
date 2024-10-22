@@ -2,6 +2,7 @@ package org.cordell.com.anizottiradiation.events;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,7 +34,9 @@ public class PlayerMoveHandler implements Listener {
                 }
                 else {
                     if (isInWater(player)) {
-                        ArmorManager.damagePlayerArmor(player, 5);
+                        var hasArmor = ArmorManager.damagePlayerArmor(player, 5);
+                        if (hasArmor) player.playSound(player.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 1.0f, 1.0f);
+                        else player.damage(0.5);
                     }
                 }
             }

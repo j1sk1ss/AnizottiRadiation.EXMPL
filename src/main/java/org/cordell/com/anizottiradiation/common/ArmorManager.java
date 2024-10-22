@@ -5,20 +5,22 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 
 public class ArmorManager {
-    public static void damagePlayerArmor(Player player, int damage) {
+    public static boolean damagePlayerArmor(Player player, int damage) {
         var helmet = player.getInventory().getHelmet();
         var chestPlate = player.getInventory().getChestplate();
         var leggings = player.getInventory().getLeggings();
         var boots = player.getInventory().getBoots();
 
-        ArmorManager.damageArmor(helmet, player, damage);
-        ArmorManager.damageArmor(chestPlate, player, damage);
-        ArmorManager.damageArmor(leggings, player, damage);
-        ArmorManager.damageArmor(boots, player, damage);
+        var status = ArmorManager.damageArmor(helmet, player, damage);
+        status = status || ArmorManager.damageArmor(chestPlate, player, damage);
+        status = status || ArmorManager.damageArmor(leggings, player, damage);
+        status = status || ArmorManager.damageArmor(boots, player, damage);
+
+        return status;
     }
 
-    public static void damageArmor(ItemStack armorPiece, Player player, int damage) {
-        if (armorPiece == null) return;
+    public static boolean damageArmor(ItemStack armorPiece, Player player, int damage) {
+        if (armorPiece == null) return false;
 
         var damageable = (Damageable) armorPiece.getItemMeta();
         if (damageable != null) {
@@ -31,5 +33,7 @@ public class ArmorManager {
                 player.sendMessage("Элемент защины сломан");
             }
         }
+
+        return true;
     }
 }
