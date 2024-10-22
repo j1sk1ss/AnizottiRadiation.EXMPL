@@ -1,5 +1,6 @@
 package org.cordell.com.anizottiradiation.events;
 
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,15 +30,26 @@ public class PlayerMoveHandler implements Listener {
                     area.getHpBar().addPlayer(player);
                 }
                 else {
-                    if (LocationManager.isInWater(player)) {
+                    if (LocationManager.isInBlock(player, Material.WATER) || LocationManager.isInBlock(player, Material.BAMBOO)) {
                         var hasArmor = ArmorManager.damagePlayerArmor(player, 2);
                         if (hasArmor) player.playSound(player.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 1.0f, 1.0f);
                         else player.damage(1);
                     }
+
+                    if (LocationManager.isOnBlock(player, Material.MOSS_BLOCK) || LocationManager.isOnBlock(player, Material.MOSS_CARPET)) {
+                        var hasArmor = ArmorManager.damagePlayerArmor(player, 1);
+                        if (hasArmor) player.playSound(player.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 1.0f, 1.0f);
+                        else player.damage(.5);
+                    }
                 }
             }
             else {
-                if (Radiation.players.containsKey(player)) {
+                if (Infection.infectedPlayers.containsKey(player)) {
+                    player.damage(.5);
+                    player.sendMessage("Вернись");
+                    area.getHpBar().removePlayer(player);
+                }
+                else if (Radiation.players.containsKey(player)) {
                     Radiation.players.remove(player);
                     endRadiationEffect(player);
 

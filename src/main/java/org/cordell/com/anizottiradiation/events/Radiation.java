@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.bukkit.Bukkit.getServer;
-import static org.cordell.com.anizottiradiation.events.Infection.infectedPlayers;
 import static org.cordell.com.anizottiradiation.objects.Area.growPlantsInArea;
 
 
@@ -38,7 +37,7 @@ public class Radiation {
     }
 
     public static void applyRadiation2Player(Player player, double proximityFactor) {
-        var isDefence = false;
+        var isDefence = Infection.infectedPlayers.containsKey(player);
         var helmet = player.getInventory().getHelmet();
         var chestPlate = player.getInventory().getChestplate();
         var leggings = player.getInventory().getLeggings();
@@ -56,22 +55,24 @@ public class Radiation {
             }
         }
 
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 500, 0));
-        player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 500, 0));
-        infectedPlayers.merge(player, 1, Math::max);
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 300, 1));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 300, 1));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 300, 1));
+        Infection.infectedPlayers.merge(player, 1, Math::max);
 
         if (proximityFactor > .35 && proximityFactor <= .8) {
             player.getWorld().playSound(player.getLocation(), Sound.AMBIENT_BASALT_DELTAS_ADDITIONS, 1.0f, 1.0f);
+            player.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 300, 0));
 
             if (!isDefence) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 500, (int) (1 + 5 * proximityFactor)));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 200, 2));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 300, (int) (1 + 5 * proximityFactor)));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 300, 2));
 
                 var maxJump = Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH)).getBaseValue();
                 Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH)).setBaseValue(Math.max(0.1, maxJump - (0.1 * proximityFactor)));
 
                 player.sendMessage("Надо уходить.");
-                infectedPlayers.merge(player, 2, Math::max);
+                Infection.infectedPlayers.merge(player, 2, Math::max);
                 for (var item : player.getInventory()) {
                     if (item == null) continue;
                     if (item.getItemMeta() == null) continue;
@@ -83,18 +84,19 @@ public class Radiation {
         if (proximityFactor > .8 && proximityFactor < 1) {
             player.getWorld().playSound(player.getLocation(), Sound.AMBIENT_CAVE, 1.0f, 1.0f);
             player.getWorld().playSound(player.getLocation(), Sound.AMBIENT_SOUL_SAND_VALLEY_MOOD, 1.0f, 1.0f);
+            player.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 300, 5));
 
             if (!isDefence) {
                 player.damage(2 * proximityFactor);
-                player.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 500, (int) (1 + 5 * proximityFactor)));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 500, 5));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 200, 1));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 300, (int) (1 + 5 * proximityFactor)));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 300, 5));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 300, 1));
 
                 var maxHealth = Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getBaseValue();
                 Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(Math.max(5, maxHealth - (2 * proximityFactor)));
 
                 player.sendMessage("Надо бежать!");
-                infectedPlayers.merge(player, 3, Math::max);
+                Infection.infectedPlayers.merge(player, 3, Math::max);
                 for (var item : player.getInventory()) {
                     if (item == null) continue;
                     if (item.getItemMeta() == null) continue;
@@ -110,12 +112,14 @@ public class Radiation {
         }
     }
 
-    public static void endRadiationEffect(Player player) {
+    public static void clearRadiationEffect(Player player) {
         player.removePotionEffect(PotionEffectType.NAUSEA);
         player.removePotionEffect(PotionEffectType.POISON);
+        player.removePotionEffect(PotionEffectType.DARKNESS);
         player.removePotionEffect(PotionEffectType.WEAKNESS);
         player.removePotionEffect(PotionEffectType.SLOWNESS);
         player.removePotionEffect(PotionEffectType.BLINDNESS);
+        player.removePotionEffect(PotionEffectType.MINING_FATIGUE);
 
         var maxHealth = Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getDefaultValue();
         Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(maxHealth);
@@ -124,7 +128,10 @@ public class Radiation {
             var defaultJumpStrength = Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH)).getDefaultValue();
             Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH)).setBaseValue(defaultJumpStrength);
         }
+    }
 
+    public static void endRadiationEffect(Player player) {
+        clearRadiationEffect(player);
         if (radiationTasks.containsKey(player)) {
             radiationTasks.get(player).cancel();
             radiationTasks.remove(player);

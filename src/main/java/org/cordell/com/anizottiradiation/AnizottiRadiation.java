@@ -15,8 +15,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-import static org.cordell.com.anizottiradiation.events.Radiation.areas;
-
 
 public final class AnizottiRadiation extends JavaPlugin {
     public static Manager dataManager;
@@ -29,7 +27,7 @@ public final class AnizottiRadiation extends JavaPlugin {
             var second = LocationConverter.stringToLocation(dataManager.getString("default_zone_second"));
             var hp = dataManager.getDouble("default_zone_hp");
             if (first != null && second != null) {
-                areas.add(new Area(first, second, hp));
+                Radiation.areas.add(new Area(first, second, hp));
                 System.out.println("Loaded default location");
             }
         } catch (IOException e) {
@@ -40,7 +38,7 @@ public final class AnizottiRadiation extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerEventHandler(), this);
 
         var command_manager = new CommandManager();
-        for (var command : List.of("add_radiation_area", "clear_infection"))
+        for (var command : List.of("add_radiation_area", "clear_infection", "create_antidote", "find_cure_block"))
             Objects.requireNonNull(getCommand(command)).setExecutor(command_manager);
 
         Radiation.growZones();
@@ -52,7 +50,7 @@ public final class AnizottiRadiation extends JavaPlugin {
     @Override
     public void onDisable() {
         System.out.println("AnizottiRadiation disabled!");
-        for (var area : areas) {
+        for (var area : Radiation.areas) {
             for (var player : Bukkit.getOnlinePlayers()) {
                 area.getHpBar().removePlayer(player);
             }

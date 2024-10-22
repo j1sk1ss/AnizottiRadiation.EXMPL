@@ -8,12 +8,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
+import org.cordell.com.anizottiradiation.AnizottiRadiation;
 
 import java.io.IOException;
 import java.util.*;
 
 import static org.bukkit.Bukkit.getServer;
-import static org.cordell.com.anizottiradiation.AnizottiRadiation.dataManager;
 
 
 public class Infection {
@@ -30,12 +30,12 @@ public class Infection {
         if (infectionLevel == null) return;
         if (infectionLevel < 3) {
             infectedPlayers.remove(player);
-            player.damage(0.1);
+            if (infectionLevel == 2) player.damage(0.1);
             return;
         }
 
         player.sendMessage("Чувствую себя отвартительно");
-        dataManager.setInt(player.getName(), infectionLevel);
+        AnizottiRadiation.dataManager.setInt(player.getName(), infectionLevel);
         list.add(applyInfection(player));
         list.add(applyRadiationParticles(player));
         list.add(applyRadiationToNearby(player));
@@ -50,7 +50,7 @@ public class Infection {
             int infectionLevel = infectedPlayers.get(player);
             infectedPlayers.put(player, infectionLevel + 1);
             try {
-                dataManager.setInt(player.getName(), infectionLevel + 1);
+                AnizottiRadiation.dataManager.setInt(player.getName(), infectionLevel + 1);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -84,7 +84,7 @@ public class Infection {
                     player.setFireTicks(500);
                 }
             }
-        }, 0, 24000);
+        }, 0, 48000);
     }
 
     private static BukkitTask applyRadiationParticles(Player player) {

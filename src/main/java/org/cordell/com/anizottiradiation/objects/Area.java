@@ -14,14 +14,13 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.cordell.com.anizottiradiation.AnizottiRadiation;
 import org.cordell.com.anizottiradiation.common.LocationConverter;
+import org.cordell.com.anizottiradiation.common.SetupProps;
 
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
-
-import static org.cordell.com.anizottiradiation.AnizottiRadiation.dataManager;
-import static org.cordell.com.anizottiradiation.common.Plants.PLANTS;
 
 
 @Setter
@@ -32,7 +31,7 @@ public class Area {
         secondLocation = secondBound;
         this.hp = hp;
 
-        hpBar = Bukkit.createBossBar("Зона", BarColor.GREEN, BarStyle.SOLID);
+        hpBar = Bukkit.createBossBar("Хихиканье младшего", BarColor.GREEN, BarStyle.SOLID);
         hpBar.setProgress(1.0);
     }
 
@@ -40,6 +39,8 @@ public class Area {
     private Location firstLocation;
     private Location secondLocation;
     private double hp;
+
+    private Material cureBlock = null;
 
     private boolean firstStage = false;
     private boolean secondStage = false;
@@ -137,13 +138,14 @@ public class Area {
         if (firstLocation.getZ() < secondLocation.getZ()) {
             firstLocation.subtract(0, 0, expansion);
             secondLocation.add(0, 0, expansion);
-        } else {
+        }
+        else {
             firstLocation.add(0, 0, expansion);
             secondLocation.subtract(0, 0, expansion);
         }
 
-        dataManager.setString("default_zone_first", LocationConverter.locationToString(firstLocation));
-        dataManager.setString("default_zone_second", LocationConverter.locationToString(secondLocation));
+        AnizottiRadiation.dataManager.setString("default_zone_first", LocationConverter.locationToString(firstLocation));
+        AnizottiRadiation.dataManager.setString("default_zone_second", LocationConverter.locationToString(secondLocation));
 
         setFirstLocation(firstLocation);
         setSecondLocation(secondLocation);
@@ -164,17 +166,14 @@ public class Area {
         var maxZ = Math.max(first.getBlockZ(), second.getBlockZ());
 
         var random = new Random();
-        for (int i = 0; i < 10; i++) { // Посадим до 10 растений за один цикл
+        for (int i = 0; i < 10; i++) {
             int x = random.nextInt(maxX - minX + 1) + minX;
             int y = random.nextInt(maxY - minY + 1) + minY;
             int z = random.nextInt(maxZ - minZ + 1) + minZ;
 
-            var plantLocation = new Location(world, x, y, z);
+            var plantLocation = new Location(world, x, y, z).toHighestLocation();
             var block = plantLocation.getBlock();
-
-            if (canPlacePlant(block)) {
-                block.setType(PLANTS.get(random.nextInt(PLANTS.size())));
-            }
+            if (canPlacePlant(block)) block.setType(SetupProps.PLANTS.get(random.nextInt(SetupProps.PLANTS.size())));
         }
     }
 
