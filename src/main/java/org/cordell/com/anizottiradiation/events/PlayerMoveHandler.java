@@ -1,40 +1,32 @@
 package org.cordell.com.anizottiradiation.events;
 
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import org.cordell.com.anizottiradiation.common.ArmorManager;
-import org.cordell.com.anizottiradiation.objects.Area;
+import org.cordell.com.anizottiradiation.common.LocationManager;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Hashtable;
 
 import static org.cordell.com.anizottiradiation.events.Radiation.endRadiationEffect;
 import static org.cordell.com.anizottiradiation.events.Radiation.startRadiationEffect;
 
 
 public class PlayerMoveHandler implements Listener {
-    public static ArrayList<Area> areas = new ArrayList<>();
-    public static Hashtable<Player, Area> players = new Hashtable<>();
-
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) throws IOException {
         var player = e.getPlayer();
-        for (var area : areas) {
-            if (isInRegion(player.getLocation(), area.getFirstLocation(), area.getSecondLocation())) {
-                if (!players.containsKey(player)) {
-                    players.put(player, area);
+        for (var area : Radiation.areas) {
+            if (area.isInRegion(player.getLocation())) {
+                if (!Radiation.players.containsKey(player)) {
+                    Radiation.players.put(player, area);
                     startRadiationEffect(player, area);
-                    player.sendMessage("Что-то нехорошее начинается...");
+                    player.sendMessage("Что-то не то...");
                 }
                 else {
-                    if (isInWater(player)) {
+                    if (LocationManager.isInWater(player)) {
                         var hasArmor = ArmorManager.damagePlayerArmor(player, 5);
                         if (hasArmor) player.playSound(player.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 1.0f, 1.0f);
                         else player.damage(0.5);
@@ -42,33 +34,14 @@ public class PlayerMoveHandler implements Listener {
                 }
             }
             else {
-                if (players.containsKey(player)) {
-                    players.remove(player);
+                if (Radiation.players.containsKey(player)) {
+                    Radiation.players.remove(player);
                     endRadiationEffect(player);
-                    player.sendMessage("Пронесло");
+                    player.sendMessage("Пронесло?");
 
                     Infection.startInfection(player);
                 }
             }
         }
-    }
-
-    private boolean isInRegion(Location source, Location firstBound, Location secondBound) {
-        if (source == null || firstBound == null || secondBound == null) return false;
-
-        var minX = Math.min(firstBound.getX(), secondBound.getX());
-        var maxX = Math.max(firstBound.getX(), secondBound.getX());
-        var minY = Math.min(firstBound.getY(), secondBound.getY());
-        var maxY = Math.max(firstBound.getY(), secondBound.getY());
-        var minZ = Math.min(firstBound.getZ(), secondBound.getZ());
-        var maxZ = Math.max(firstBound.getZ(), secondBound.getZ());
-
-        return (source.getX() >= minX && source.getX() <= maxX) &&
-                (source.getY() >= minY && source.getY() <= maxY) &&
-                (source.getZ() >= minZ && source.getZ() <= maxZ);
-    }
-
-    private boolean isInWater(Player player) {
-        return player.getLocation().getBlock().getType() == Material.WATER;
     }
 }

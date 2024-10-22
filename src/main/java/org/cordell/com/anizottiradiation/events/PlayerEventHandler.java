@@ -5,9 +5,13 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.potion.PotionEffectType;
+import org.cordell.com.anizottiradiation.common.LocationManager;
+import org.j1sk1ss.itemmanager.manager.Manager;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,8 +42,8 @@ public class PlayerEventHandler implements Listener {
             PotionEffectType.SPEED
     );
 
-    private final Material cureItem = CURE_ITEMS.get(new Random().nextInt(CURE_ITEMS.size()));;
-    private final PotionEffectType cureEffect = CURE_EFFECTS.get(new Random().nextInt(CURE_EFFECTS.size()));;
+    private final Material cureItem = CURE_ITEMS.get(new Random().nextInt(CURE_ITEMS.size()));
+    private final PotionEffectType cureEffect = CURE_EFFECTS.get(new Random().nextInt(CURE_EFFECTS.size()));
 
 
     @EventHandler
@@ -48,6 +52,7 @@ public class PlayerEventHandler implements Listener {
         var infectionLevel = dataManager.getInt(player.getName());
         if (infectionLevel != -1) {
             infectedPlayers.put(player, infectionLevel);
+            startInfection(player);
         }
     }
 
@@ -68,6 +73,37 @@ public class PlayerEventHandler implements Listener {
         if (player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH) != null) {
             var defaultJumpStrength = Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH)).getDefaultValue();
             Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH)).setBaseValue(defaultJumpStrength);
+        }
+    }
+
+    @EventHandler
+    public void onItemPickup(PlayerPickupItemEvent event) throws IOException {
+        var player = event.getPlayer();
+        if (infectionTasks.containsKey(player)) return;
+
+        var infectedFlag = Manager.getIntegerFromContainer(event.getItem().getItemStack(), "infected");
+        if (infectedFlag == 1) {
+            infectedPlayers.put(player, 1);
+            startInfection(player);
+        }
+    }
+
+    @EventHandler
+    public void onBlockPlaced(BlockPlaceEvent event) throws IOException {
+        var player = event.getPlayer();
+        for (var area : Radiation.areas) {
+            if (area.isInRegion(player.getLocation())) {
+                var center = area.getCenter();
+                var distance = player.getLocation().distance(center);
+                var maxDistance = center.distance(area.getFirstLocation());
+                var proximityFactor = 1 - (distance / maxDistance);
+
+                if (proximityFactor >= .65) {
+                    if (event.getBlock().getType() == Material.SAND) {
+                        area.expandArea(-.1);
+                    }
+                }
+            }
         }
     }
 

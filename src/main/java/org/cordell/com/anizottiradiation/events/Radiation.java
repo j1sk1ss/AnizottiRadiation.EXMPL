@@ -7,20 +7,27 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+
 import org.cordell.com.anizottiradiation.common.ArmorManager;
+import org.cordell.com.anizottiradiation.common.LocationConverter;
 import org.cordell.com.anizottiradiation.objects.Area;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import org.j1sk1ss.itemmanager.manager.Manager;
+
+import java.io.IOException;
+import java.util.*;
 
 import static org.bukkit.Bukkit.getServer;
+import static org.cordell.com.anizottiradiation.AnizottiRadiation.dataManager;
 import static org.cordell.com.anizottiradiation.events.Infection.infectedPlayers;
-import static org.cordell.com.anizottiradiation.events.PlayerMoveHandler.players;
+import static org.cordell.com.anizottiradiation.objects.Area.growPlantsInArea;
 
 
 public class Radiation {
+    public static ArrayList<Area> areas = new ArrayList<>();
+    public static Hashtable<Player, Area> players = new Hashtable<>();
     public static final Map<Player, BukkitTask> radiationTasks = new HashMap<>();
 
     public static void startRadiationEffect(Player player, Area area) {
@@ -86,6 +93,10 @@ public class Radiation {
 
             player.sendMessage("Надо бежать!");
             infectedPlayers.merge(player, 3, Math::max);
+
+            for (var item : player.getInventory()) {
+                Manager.setInteger2Container(item, 1, "infected");
+            }
         }
     }
 
@@ -108,5 +119,29 @@ public class Radiation {
             radiationTasks.get(player).cancel();
             radiationTasks.remove(player);
         }
+    }
+
+    public static void plantGrowth() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Area area : areas) growPlantsInArea(area);
+            }
+        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("AnizottiRadiation")), 0, 1500);
+    }
+
+    public static void growZones() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (var area : areas) {
+                    try {
+                        area.expandArea(new Random().nextInt(5));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("AnizottiRadiation")), 0, 24000);
     }
 }

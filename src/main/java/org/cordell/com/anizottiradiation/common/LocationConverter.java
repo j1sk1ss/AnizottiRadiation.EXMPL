@@ -3,6 +3,7 @@ package org.cordell.com.anizottiradiation.common;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
+
 public class LocationConverter {
     public static String locationToString(Location location) {
         if (location == null) return null;

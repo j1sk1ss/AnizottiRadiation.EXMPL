@@ -15,6 +15,7 @@ import java.util.*;
 import static org.bukkit.Bukkit.getServer;
 import static org.cordell.com.anizottiradiation.AnizottiRadiation.dataManager;
 
+
 public class Infection {
     public static final Map<Player, Integer> infectedPlayers = new HashMap<>();
     public static final Map<Player, ArrayList<BukkitTask>> infectionTasks = new HashMap<>();

@@ -6,14 +6,14 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import org.cordell.com.anizottiradiation.common.LocationConverter;
-import org.cordell.com.anizottiradiation.events.PlayerMoveHandler;
-import org.cordell.com.anizottiradiation.objects.Area;
-import static org.cordell.com.anizottiradiation.AnizottiRadiation.dataManager;
-
 import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
+
+import org.cordell.com.anizottiradiation.common.LocationConverter;
+import org.cordell.com.anizottiradiation.events.Radiation;
+import org.cordell.com.anizottiradiation.objects.Area;
+
+import static org.cordell.com.anizottiradiation.AnizottiRadiation.dataManager;
 
 
 public class CommandManager implements CommandExecutor {
@@ -43,7 +43,7 @@ public class CommandManager implements CommandExecutor {
                 var secondBound = new Location(player.getWorld(), x2, y2, z2);
 
                 var newArea = new Area(firstBound, secondBound);
-                PlayerMoveHandler.areas.add(newArea);
+                Radiation.areas.add(newArea);
                 player.sendMessage("New radioactive area added successfully.");
 
                 dataManager.setString("default_zone_first", LocationConverter.locationToString(firstBound));
