@@ -35,6 +35,8 @@ public class PlayerMoveHandler implements Listener {
                     players.remove(player);
                     endRadiationEffect(player);
                     player.sendMessage("Пронесло");
+
+                    Infection.startInfection(player);
                 }
             }
         }

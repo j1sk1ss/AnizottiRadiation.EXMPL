@@ -3,6 +3,7 @@ package org.cordell.com.anizottiradiation;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.cordell.com.anizottiradiation.common.LocationConverter;
+import org.cordell.com.anizottiradiation.events.PlayerEventHandler;
 import org.cordell.com.anizottiradiation.events.PlayerMoveHandler;
 import org.cordell.com.anizottiradiation.link.CommandManager;
 import org.cordell.com.anizottiradiation.objects.Area;
@@ -33,6 +34,7 @@ public final class AnizottiRadiation extends JavaPlugin {
         }
 
         Bukkit.getPluginManager().registerEvents(new PlayerMoveHandler(), this);
+
         var command_manager = new CommandManager();
         for (var command : List.of("add_radiation_area"))
             Objects.requireNonNull(getCommand(command)).setExecutor(command_manager);
