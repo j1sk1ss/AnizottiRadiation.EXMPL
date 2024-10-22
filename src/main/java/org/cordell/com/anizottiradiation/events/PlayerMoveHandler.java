@@ -1,11 +1,13 @@
 package org.cordell.com.anizottiradiation.events;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
+import org.cordell.com.anizottiradiation.common.ArmorManager;
 import org.cordell.com.anizottiradiation.objects.Area;
 
 import java.util.ArrayList;
@@ -28,6 +30,11 @@ public class PlayerMoveHandler implements Listener {
                     players.put(player, area);
                     startRadiationEffect(player, area);
                     player.sendMessage("Что-то нехорошее начинается...");
+                }
+                else {
+                    if (isInWater(player)) {
+                        ArmorManager.damagePlayerArmor(player, 5);
+                    }
                 }
             }
             else {
@@ -55,5 +62,9 @@ public class PlayerMoveHandler implements Listener {
         return (source.getX() >= minX && source.getX() <= maxX) &&
                 (source.getY() >= minY && source.getY() <= maxY) &&
                 (source.getZ() >= minZ && source.getZ() <= maxZ);
+    }
+
+    private boolean isInWater(Player player) {
+        return player.getLocation().getBlock().getType() == Material.WATER;
     }
 }

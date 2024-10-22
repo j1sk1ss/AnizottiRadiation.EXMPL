@@ -49,7 +49,7 @@ public class Radiation {
         ArmorManager.damageArmor(boots, player, (int)(10 * proximityFactor));
 
         if (helmet != null && chestPlate != null && leggings != null && boots != null) {
-            if (helmet.getType() == Material.IRON_HELMET && chestPlate.getType() == Material.IRON_CHESTPLATE ||
+            if (helmet.getType() == Material.LEATHER_HELMET && chestPlate.getType() == Material.IRON_CHESTPLATE ||
                     leggings.getType() == Material.IRON_LEGGINGS && boots.getType() == Material.IRON_BOOTS) {
                 return;
             }
