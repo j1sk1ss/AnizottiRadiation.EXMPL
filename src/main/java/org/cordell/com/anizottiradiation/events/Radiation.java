@@ -25,7 +25,9 @@ import static org.bukkit.Bukkit.getServer;
 public class Radiation {
     public static ArrayList<Area> areas = new ArrayList<>();
     public static Hashtable<Player, Area> players = new Hashtable<>();
+
     public static final Map<Player, BukkitTask> radiationTasks = new HashMap<>();
+    public static final Map<Player, BukkitTask> brokenCompassTasks = new HashMap<>();
 
     public static void startRadiationEffect(Player player, Area area) {
         var task = Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
@@ -34,6 +36,17 @@ public class Radiation {
         }, 0, 200);
 
         radiationTasks.put(player, task);
+    }
+
+    public static void brokePlayerCompass(Player player) {
+        if (brokenCompassTasks.containsKey(player)) return;
+
+        player.sendMessage("Навигация сбита из-за помех");
+        var task = Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
+            player.setCompassTarget(LocationManager.randomLocation(player));
+        }, 0, 10);
+
+        brokenCompassTasks.put(player, task);
     }
 
     public static void applyRadiation2Player(Player player, double proximityFactor) {
@@ -85,7 +98,7 @@ public class Radiation {
             player.getWorld().playSound(player.getLocation(), Sound.AMBIENT_CAVE, 1.0f, 1.0f);
             player.getWorld().playSound(player.getLocation(), Sound.AMBIENT_SOUL_SAND_VALLEY_MOOD, 1.0f, 1.0f);
             player.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 300, 5));
-            player.setCompassTarget(LocationManager.randomLocation(player));
+            brokePlayerCompass(player);
 
             if (!isDefence) {
                 player.damage(2 * proximityFactor);
@@ -104,6 +117,10 @@ public class Radiation {
                     Manager.setInteger2Container(item, 3, "infected");
                 }
             }
+        }
+        else {
+            brokenCompassTasks.get(player).cancel();
+            brokenCompassTasks.remove(player);
         }
 
         try {
@@ -145,7 +162,7 @@ public class Radiation {
             public void run() {
                 for (Area area : areas) area.growPlantsInArea();
             }
-        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("AnizottiRadiation")), 0, 60);
+        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("AnizottiRadiation")), 0, 120);
     }
 
     public static void growZones() {
@@ -154,7 +171,7 @@ public class Radiation {
             public void run() {
                 for (var area : areas) {
                     try {
-                        var regenSize = new Random().nextInt(2);
+                        var regenSize = new Random().nextInt(10);
                         area.expandArea(regenSize);
                         area.damageZone(-regenSize);
                     } catch (IOException e) {

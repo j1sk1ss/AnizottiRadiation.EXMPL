@@ -51,10 +51,12 @@ public class Area {
             var zOffset = distanceFromCenter * Math.sin(angle);
             var y = center.getBlockY() + 1;
 
-            Location blockLocation = new Location(center.getWorld(), center.getBlockX() + xOffset, y, center.getBlockZ() + zOffset).toHighestLocation();
-            Block homeBlock = blockLocation.getBlock();
+            var blockLocation = new Location(center.getWorld(), center.getBlockX() + xOffset, y, center.getBlockZ() + zOffset).toHighestLocation();
+            var homeBlock = blockLocation.getBlock();
 
-            if (homeBlock.getType() == Material.DIRT || homeBlock.getType() == Material.GRASS_BLOCK || homeBlock.getType() == Material.MOSS_BLOCK) {
+            if (homeBlock.getType() == Material.DIRT || homeBlock.getType() == Material.GRASS_BLOCK ||
+                    homeBlock.getType() == Material.MOSS_BLOCK || homeBlock.getType() == Material.STONE ||
+                    homeBlock.getType() == Material.COARSE_DIRT || homeBlock.getType() == Material.PODZOL) {
                 var distanceFactorToCenter = blockLocation.distance(center) / radius;
 
                 var zone = -1;
@@ -67,13 +69,15 @@ public class Area {
                 else zone = 1;
 
                 if (zone != -1) {
-                    Block block = blockLocation.add(0, 1, 0).getBlock();
+                    var block = blockLocation.add(0, 1, 0).getBlock();
                     block.setType(SetupProps.ANALYZE_BLOCKS.get(new Random().nextInt(SetupProps.ANALYZE_BLOCKS.size())));
                     analyzeBlocks.add(block);
                     spawnedZones[zone] = true;
                 }
             }
         }
+
+        System.out.println("Area generated");
     }
 
     private BossBar hpBar;
@@ -203,17 +207,16 @@ public class Area {
 
         var random = new Random();
         for (int i = 0; i < 10; i++) {
-            while (true) {
-                int x = random.nextInt(maxX - minX + 1) + minX;
-                int y = random.nextInt(maxY - minY + 1) + minY;
-                int z = random.nextInt(maxZ - minZ + 1) + minZ;
+            int x = random.nextInt(maxX - minX + 1) + minX;
+            int y = random.nextInt(maxY - minY + 1) + minY;
+            int z = random.nextInt(maxZ - minZ + 1) + minZ;
 
-                var plantLocation = new Location(world, x, y, z).toHighestLocation();
-                var block = plantLocation.getBlock();
-                if (canPlacePlant(block)) {
-                    block.setType(SetupProps.RADIOACTIVE_PLANTS.get(random.nextInt(SetupProps.RADIOACTIVE_PLANTS.size())));
-                    break;
-                }
+            var plantLocation = new Location(world, x, y, z).toHighestLocation();
+            var block = plantLocation.getBlock();
+            var plant = SetupProps.RADIOACTIVE_PLANTS.get(random.nextInt(SetupProps.RADIOACTIVE_PLANTS.size()));
+            if (canPlacePlant(block, plant)) {
+                block.setType(plant);
+                break;
             }
         }
     }
@@ -268,14 +271,12 @@ public class Area {
         hpBar.removeAll();
     }
 
-    private static boolean canPlacePlant(Block block) {
+    private static boolean canPlacePlant(Block block, Material plant) {
         var blockType = block.getType();
         var blockBelowType = block.getRelative(0, -1, 0).getType();
 
-        return (blockType == Material.AIR || blockType == Material.WATER) &&
-                (blockBelowType == Material.GRASS_BLOCK ||
-                        blockBelowType == Material.DIRT ||
-                        blockBelowType == Material.SAND ||
-                        blockBelowType == Material.PODZOL);
+        return (plant == Material.MOSS_BLOCK && blockType == Material.STONE) ||
+                (blockType == Material.AIR && (blockBelowType == Material.GRASS_BLOCK ||
+                        blockBelowType == Material.DIRT || blockBelowType == Material.SAND || blockBelowType == Material.PODZOL));
     }
 }

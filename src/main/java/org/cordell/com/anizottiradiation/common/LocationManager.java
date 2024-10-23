@@ -20,8 +20,8 @@ public class LocationManager {
     public static Location randomLocation(Player player) {
         var random = new Random();
         return new Location(
-                player.getWorld(), random.nextDouble(1000d),
-                random.nextDouble(1000d), random.nextDouble(1000d)
+                player.getWorld(), random.nextInt(1000) - 500,
+                random.nextInt(1000) - 500, random.nextInt(1000) - 500
         );
     }
 }
