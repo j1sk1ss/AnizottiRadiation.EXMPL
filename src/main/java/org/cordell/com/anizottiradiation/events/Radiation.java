@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.bukkit.Bukkit.getServer;
-import static org.cordell.com.anizottiradiation.objects.Area.growPlantsInArea;
 
 
 public class Radiation {
@@ -142,7 +141,7 @@ public class Radiation {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (Area area : areas) growPlantsInArea(area);
+                for (Area area : areas) area.growPlantsInArea();
             }
         }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("AnizottiRadiation")), 0, 1500);
     }

@@ -8,6 +8,14 @@ import java.util.List;
 
 
 public class SetupProps {
+    public static final List<Material> ANALYZE_BLOCKS = Arrays.asList(
+            Material.DIRT,
+            Material.MOSS_BLOCK,
+            Material.STONE,
+            Material.GRASS_BLOCK,
+            Material.GRAVEL
+    );
+
     public static final List<Material> CURE_BLOCKS = Arrays.asList(
             Material.SAND,
             Material.COBBLESTONE,

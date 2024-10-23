@@ -51,9 +51,15 @@ public final class AnizottiRadiation extends JavaPlugin {
     public void onDisable() {
         System.out.println("AnizottiRadiation disabled!");
         for (var area : Radiation.areas) {
-            for (var player : Bukkit.getOnlinePlayers()) {
-                area.getHpBar().removePlayer(player);
+            try {
+                dataManager.setString("default_zone_first", LocationConverter.locationToString(area.getFirstLocation()));
+                dataManager.setString("default_zone_second", LocationConverter.locationToString(area.getSecondLocation()));
+                dataManager.setDouble("default_zone_hp", 640d);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
+
+            area.cleanUp();
         }
     }
 }

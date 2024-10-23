@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -19,8 +20,7 @@ import org.cordell.com.anizottiradiation.common.LocationConverter;
 import org.cordell.com.anizottiradiation.common.SetupProps;
 
 import java.io.IOException;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 
 @Setter
@@ -33,6 +33,47 @@ public class Area {
 
         hpBar = Bukkit.createBossBar("Хихиканье младшего", BarColor.GREEN, BarStyle.SOLID);
         hpBar.setProgress(1.0);
+
+        var center = getCenter();
+        var width  = Math.abs(firstLocation.getBlockX() - secondLocation.getBlockX());
+        var height = Math.abs(firstLocation.getBlockZ() - secondLocation.getBlockZ());
+
+        analyzeBlocks = new ArrayList<>();
+
+        var radius = Math.min(width, height) / 2d;
+        var spawnedZones = new boolean[4];
+
+        while (analyzeBlocks.size() < 8) {
+            var angle = new Random().nextDouble() * 2 * Math.PI;
+            var distanceFactor = new Random().nextDouble();
+            var distanceFromCenter = (0.3 + distanceFactor * 0.7) * radius;
+            var xOffset = distanceFromCenter * Math.cos(angle);
+            var zOffset = distanceFromCenter * Math.sin(angle);
+            var y = center.getBlockY() + 1;
+
+            Location blockLocation = new Location(center.getWorld(), center.getBlockX() + xOffset, y, center.getBlockZ() + zOffset).toHighestLocation();
+            Block homeBlock = blockLocation.getBlock();
+
+            if (homeBlock.getType() == Material.DIRT || homeBlock.getType() == Material.GRASS_BLOCK || homeBlock.getType() == Material.MOSS_BLOCK) {
+                var distanceFactorToCenter = blockLocation.distance(center) / radius;
+
+                var zone = -1;
+                if (analyzeBlocks.size() < 4) {
+                    if (distanceFactorToCenter >= 0.3 && distanceFactorToCenter < 0.5 && !spawnedZones[0]) zone = 0;
+                    else if (distanceFactorToCenter >= 0.5 && distanceFactorToCenter < 0.7 && !spawnedZones[1]) zone = 1;
+                    else if (distanceFactorToCenter >= 0.7 && distanceFactorToCenter < 0.9 && !spawnedZones[2]) zone = 2;
+                    else if (distanceFactorToCenter >= 0.9 && distanceFactorToCenter <= 1.0 && !spawnedZones[3]) zone = 3;
+                }
+                else zone = 1;
+
+                if (zone != -1) {
+                    Block block = blockLocation.add(0, 1, 0).getBlock();
+                    block.setType(SetupProps.ANALYZE_BLOCKS.get(new Random().nextInt(SetupProps.ANALYZE_BLOCKS.size())));
+                    analyzeBlocks.add(block);
+                    spawnedZones[zone] = true;
+                }
+            }
+        }
     }
 
     private BossBar hpBar;
@@ -40,6 +81,7 @@ public class Area {
     private Location secondLocation;
     private double hp;
 
+    private ArrayList<Block> analyzeBlocks = null;
     private Material cureBlock = null;
 
     private boolean firstStage = false;
@@ -50,8 +92,6 @@ public class Area {
         hp -= damage;
         if (hp > 400 && hp <= 630 && !firstStage) {
             spawnHorde("armored", 25, EntityType.SKELETON);
-            Bukkit.broadcastMessage("Зона активирует защиту, готовьтесь к атаке!");
-
             firstStage = true;
             secondStage = false;
             thirdStage = false;
@@ -59,8 +99,6 @@ public class Area {
 
         if (hp > 200 && hp <= 400 && !secondStage) {
             spawnHorde("elite", 25, EntityType.ZOMBIE);
-            Bukkit.broadcastMessage("Зона вызывает элитные силы, будьте осторожны!");
-
             firstStage = false;
             secondStage = true;
             thirdStage = false;
@@ -68,8 +106,6 @@ public class Area {
 
         if (hp > 0 && hp <= 200 && !thirdStage) {
             spawnHorde("boss", 15, EntityType.PILLAGER);
-            Bukkit.broadcastMessage("Зона в отчаянии вызывает босса! Приготовьтесь к бою!");
-
             firstStage = false;
             secondStage = false;
             thirdStage = true;
@@ -151,12 +187,12 @@ public class Area {
         setSecondLocation(secondLocation);
     }
 
-    public static void growPlantsInArea(Area area) {
-        var world = area.getFirstLocation().getWorld();
+    public void growPlantsInArea() {
+        var world = getFirstLocation().getWorld();
         if (world == null) return;
 
-        var first = area.getFirstLocation();
-        var second = area.getSecondLocation();
+        var first = getFirstLocation();
+        var second = getSecondLocation();
 
         var minX = Math.min(first.getBlockX(), second.getBlockX());
         var maxX = Math.max(first.getBlockX(), second.getBlockX());
@@ -177,6 +213,14 @@ public class Area {
         }
     }
 
+    public void cleanUp() {
+        for (var player : Bukkit.getOnlinePlayers())
+            getHpBar().removePlayer(player);
+
+        for (var block : getAnalyzeBlocks())
+            block.setType(Material.AIR);
+    }
+
     private void spawnHorde(String type, int count, EntityType entity) {
         for (int i = 0; i < count; i++) {
             var world = Bukkit.getServer().getWorlds().get(0);
@@ -189,6 +233,8 @@ public class Area {
 
             assert world != null;
             var spawnedEntity = (LivingEntity)world.spawnEntity(loc, entity);
+            Objects.requireNonNull(spawnedEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(100);
+            spawnedEntity.setHealth(100);
 
             switch (type) {
                 case "armored":
@@ -219,12 +265,12 @@ public class Area {
 
     private static boolean canPlacePlant(Block block) {
         var blockType = block.getType();
-        var blockBelow = block.getRelative(0, -1, 0);
+        var blockBelowType = block.getRelative(0, -1, 0).getType();
+
         return (blockType == Material.AIR || blockType == Material.WATER) &&
-                (blockBelow.getType() == Material.GRASS_BLOCK ||
-                        blockBelow.getType() == Material.DIRT ||
-                        blockBelow.getType() == Material.SAND ||
-                        blockBelow.getType() == Material.PODZOL ||
-                        blockBelow.getType() == Material.STONE);
+                (blockBelowType == Material.GRASS_BLOCK ||
+                        blockBelowType == Material.DIRT ||
+                        blockBelowType == Material.SAND ||
+                        blockBelowType == Material.PODZOL);
     }
 }

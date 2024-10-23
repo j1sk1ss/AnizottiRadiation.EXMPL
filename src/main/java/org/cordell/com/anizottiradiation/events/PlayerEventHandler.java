@@ -3,7 +3,9 @@ package org.cordell.com.anizottiradiation.events;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -15,6 +17,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.cordell.com.anizottiradiation.AnizottiRadiation;
 import org.j1sk1ss.itemmanager.manager.Item;
@@ -22,7 +26,7 @@ import org.j1sk1ss.itemmanager.manager.Manager;
 
 import java.io.IOException;
 import java.util.Objects;
-
+import java.util.Random;
 
 
 public class PlayerEventHandler implements Listener {
@@ -125,12 +129,11 @@ public class PlayerEventHandler implements Listener {
     @EventHandler
     public void onBlockClick(PlayerInteractEvent event) {
         var player = event.getPlayer();
-        var block = event.getClickedBlock();
-        if (block == null) return;
+        if (event.getHand() == EquipmentSlot.OFF_HAND) return;
 
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() == Action.RIGHT_CLICK_AIR) {
             for (var area : Radiation.areas) {
-                if (area.isInRegion(block.getLocation())) {
+                if (area.isInRegion(player.getLocation())) {
                     if (player.getInventory().getItemInMainHand().getType() == Material.BOOK) {
                         var value = Math.round(area.getProximityFactor(player) * 100d) / 100d;
                         var message = "";
@@ -141,29 +144,60 @@ public class PlayerEventHandler implements Listener {
                         player.sendMessage("Счётчик Гейгера: " + Math.round(area.getProximityFactor(player) * 100d) / 100d + " (" + message + ")");
                         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CHAIN_PLACE, 1.0f, 1.0f);
                     }
-                    else if (player.getInventory().getItemInMainHand().getType() == Material.GLASS_BOTTLE) {
+                    else if (player.getInventory().getItemInMainHand().getType() == Material.COMPASS) {
+                        var analyzeBlocks = area.getAnalyzeBlocks();
+                        if (analyzeBlocks.isEmpty()) {
+                            player.sendMessage("Нет доступных блоков для анализа.");
+                            return;
+                        }
+
+                        var targetBlock = analyzeBlocks.get(new Random().nextInt(analyzeBlocks.size()));
+                        player.setCompassTarget(targetBlock.getLocation());
+
+                        if (player.getLocation().getBlockY() > targetBlock.getLocation().getBlockY()) {
+                            player.sendMessage("Вы выше <МАТЕРИАЛА> на " + (player.getLocation().getBlockY() - targetBlock.getLocation().getBlockY()));
+                        }
+                        else {
+                            player.sendMessage("Вы ниже <МАТЕРИАЛА> на " + (targetBlock.getLocation().getBlockY() - player.getLocation().getBlockY()));
+                        }
+                    }
+                }
+            }
+        }
+
+        var block = event.getClickedBlock();
+        if (block == null) return;
+
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            for (var area : Radiation.areas) {
+                if (area.isInRegion(block.getLocation())) {
+                    if (player.getInventory().getItemInMainHand().getType() == Material.GLASS_BOTTLE) {
                         if (Infection.infectedPlayers.containsKey(player)) {
                             player.sendMessage("З̧̡̢̟̖̱̳̮̪̭͕̯̫̆ͮ̋̐͐̇ͬ̒͞а̧̝͉̖̜̟̳͚͚̝̫͓̹͔͇̖́̓ͦ̋ͬ̆ͨ̂̋͝р̱̰̥̭͚͔̜̲̭̣̖͎̦̥̮͇̇͊͆͗͘͢а̴̵̘͙̞̥̯̞̗̻̯̖͖͎ͬ͊ͬ̿ͮ̊͐̓ͦ͐ͥ͑̎̍͌̈̈ͭ̀͡ж̴̵̖̝̰͕̤̣̯͓̹̺̇̅͗̋̂ͣ͑̑͐ͬ͒̚̕͠ё̝̼̘̰̱̙̲̭̞̼͙͔̣̍̐ͩ́͆̓͗͐ͥ̑͆̅͂͑ͦ̓̿́̚̚͟͝͝͡н̸̡̠̝̞̘͇̻̖̥̪̗̘̺ͬ̑̓͗ͣ̆ͦ͒͌̋͊ͤ͆ͮͭ͆̚̕н̸̡̱̗̘͓̘͍̙̹͖̗̘̰̟̘̤͕̪́ͨ̇ͣ̔ͫ͐̏̽͂͋̍ͦ̄͂̒͂̕͟ы̋ͮͪͮ͋̋͌ͥ͛̊̂ͪ̌͠҉̨͎͔̯͕͖͖̤̣͈̲̻͍̟͈͓̺̙̟̣й̷̎ͫͯͯ̓̈ͦ͛̇ͤ̆̎͋̉̌͐͗͋͆͜͠͏̟̖̺͍͜");
                             return;
                         }
 
-                        if (event.getClickedBlock().getType() != Material.DIRT &&
-                                event.getClickedBlock().getType() != Material.GRASS_BLOCK &&
-                                event.getClickedBlock().getType() != Material.DIRT_PATH) {
-                            player.sendMessage("Необходим образец почвы");
+                        if (!area.getAnalyzeBlocks().contains(event.getClickedBlock())) {
+                            player.sendMessage("Необходим образец <МАТЕРИАЛА>");
                             return;
                         }
 
-                        var type = -1;
-                        var distance = area.getProximityFactor(player);
-                        if (distance < .3) type = 1;
-                        else if (distance >= .3 && distance < .5) type = 2;
-                        else if (distance >= .5 && distance < .8) type = 3;
-                        else if (distance >= .8 && distance < 1) type = 4;
-
-                        var item = new Item("Анализ", "Анализ почвы " + type, Material.POTION);
+                        var type = area.getAnalyzeBlocks().indexOf(event.getClickedBlock());
+                        var item = new Item("Анализ", "Анализ <МАТЕРИАЛА> №" + type, Material.POTION);
                         Manager.setInteger2Container(item, type, "dirt_analyze");
                         player.getInventory().setItemInMainHand(item);
+
+                        for (int i = 0; i < 2; i++) {
+                            var xOffset = (new Random().nextDouble() * 4) - 2;
+                            var zOffset = (new Random().nextDouble() * 4) - 2;
+                            var spawnLocation = player.getLocation().add(xOffset, 0, zOffset);
+
+                            var zombie = (Zombie)player.getWorld().spawnEntity(spawnLocation, EntityType.ZOMBIE);
+
+                            Objects.requireNonNull(zombie.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(100);
+                            zombie.setHealth(100);
+                            Objects.requireNonNull(zombie.getEquipment()).setHelmet(new ItemStack(Material.IRON_HELMET));
+                        }
                     }
                 }
             }

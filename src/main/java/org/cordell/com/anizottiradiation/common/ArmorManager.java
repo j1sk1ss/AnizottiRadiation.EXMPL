@@ -20,6 +20,21 @@ public class ArmorManager {
         return status;
     }
 
+    public static boolean damagePlayerArmor(Player player, int damage, int type) {
+        var helmet = player.getInventory().getHelmet();
+        var chestPlate = player.getInventory().getChestplate();
+        var leggings = player.getInventory().getLeggings();
+        var boots = player.getInventory().getBoots();
+
+        var status = false;
+        if (type == 0) status = status || ArmorManager.damageArmor(helmet, player, damage);
+        else if (type == 1) status = status || ArmorManager.damageArmor(chestPlate, player, damage);
+        else if (type == 2) status = status || ArmorManager.damageArmor(leggings, player, damage);
+        else status = status || ArmorManager.damageArmor(boots, player, damage);
+
+        return status;
+    }
+
     public static boolean damageArmor(ItemStack armorPiece, Player player, int damage) {
         if (armorPiece == null) return false;
 

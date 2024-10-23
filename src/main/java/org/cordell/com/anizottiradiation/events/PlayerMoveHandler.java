@@ -37,7 +37,7 @@ public class PlayerMoveHandler implements Listener {
                     }
 
                     if (LocationManager.isOnBlock(player, Material.MOSS_BLOCK) || LocationManager.isOnBlock(player, Material.MOSS_CARPET)) {
-                        var hasArmor = ArmorManager.damagePlayerArmor(player, 1);
+                        var hasArmor = ArmorManager.damagePlayerArmor(player, 1, 3);
                         if (hasArmor) player.playSound(player.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 1.0f, 1.0f);
                         else player.damage(.5);
                     }

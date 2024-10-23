@@ -130,16 +130,21 @@ public class CommandManager implements CommandExecutor {
             }
 
             var uniqueGas = new HashSet<>(analyzes);
-            if (uniqueGas.size() >= 4) {
-                Manager.takeItems(items, player);
-                for (var area : Radiation.areas) {
-                    area.setCureBlock(SetupProps.CURE_BLOCKS.get(new Random().nextInt(SetupProps.CURE_BLOCKS.size())));
-                    if (area.isInRegion(player.getLocation()))
-                        player.sendMessage("Зона убирается с помощью: " + area.getCureBlock());
+            for (var area : Radiation.areas) {
+                if (area.isInRegion(player.getLocation())) {
+                    player.sendMessage("Тут этого не сделать");
+                    continue;
                 }
-            }
-            else {
-                player.sendMessage("Не хватает анализов: " + (4 - uniqueGas.size()));
+
+                if (uniqueGas.size() < area.getAnalyzeBlocks().size()) {
+                    player.sendMessage("Не хватает анализов: " + (area.getAnalyzeBlocks().size() - uniqueGas.size()));
+                    continue;
+                }
+
+                Manager.takeItems(items, player);
+                area.setCureBlock(SetupProps.CURE_BLOCKS.get(new Random().nextInt(SetupProps.CURE_BLOCKS.size())));
+                if (area.isInRegion(player.getLocation()))
+                    player.sendMessage("Зона убирается с помощью: " + area.getCureBlock());
             }
         }
 
