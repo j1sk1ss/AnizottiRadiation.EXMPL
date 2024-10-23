@@ -203,13 +203,18 @@ public class Area {
 
         var random = new Random();
         for (int i = 0; i < 10; i++) {
-            int x = random.nextInt(maxX - minX + 1) + minX;
-            int y = random.nextInt(maxY - minY + 1) + minY;
-            int z = random.nextInt(maxZ - minZ + 1) + minZ;
+            while (true) {
+                int x = random.nextInt(maxX - minX + 1) + minX;
+                int y = random.nextInt(maxY - minY + 1) + minY;
+                int z = random.nextInt(maxZ - minZ + 1) + minZ;
 
-            var plantLocation = new Location(world, x, y, z).toHighestLocation();
-            var block = plantLocation.getBlock();
-            if (canPlacePlant(block)) block.setType(SetupProps.PLANTS.get(random.nextInt(SetupProps.PLANTS.size())));
+                var plantLocation = new Location(world, x, y, z).toHighestLocation();
+                var block = plantLocation.getBlock();
+                if (canPlacePlant(block)) {
+                    block.setType(SetupProps.RADIOACTIVE_PLANTS.get(random.nextInt(SetupProps.RADIOACTIVE_PLANTS.size())));
+                    break;
+                }
+            }
         }
     }
 

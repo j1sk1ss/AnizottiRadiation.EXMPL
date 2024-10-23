@@ -38,7 +38,7 @@ public final class AnizottiRadiation extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerEventHandler(), this);
 
         var command_manager = new CommandManager();
-        for (var command : List.of("add_radiation_area", "clear_infection", "create_antidote", "find_cure_block"))
+        for (var command : List.of("add_radiation_area", "clear_infection", "create_antidote"))
             Objects.requireNonNull(getCommand(command)).setExecutor(command_manager);
 
         Radiation.growZones();

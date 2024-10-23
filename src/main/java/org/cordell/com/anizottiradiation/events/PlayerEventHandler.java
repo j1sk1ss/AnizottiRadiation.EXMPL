@@ -21,10 +21,14 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.cordell.com.anizottiradiation.AnizottiRadiation;
+import org.cordell.com.anizottiradiation.common.SetupProps;
+import org.cordell.com.anizottiradiation.common.StringManager;
 import org.j1sk1ss.itemmanager.manager.Item;
 import org.j1sk1ss.itemmanager.manager.Manager;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Random;
 
@@ -135,14 +139,44 @@ public class PlayerEventHandler implements Listener {
             for (var area : Radiation.areas) {
                 if (area.isInRegion(player.getLocation())) {
                     if (player.getInventory().getItemInMainHand().getType() == Material.BOOK) {
-                        var value = Math.round(area.getProximityFactor(player) * 100d) / 100d;
-                        var message = "";
-                        if (value < .4) message = "Приемлемый уровень";
-                        else if (value >= .4 && value < .75) message = "Опасный уровень";
-                        else if (value >= .75 && value < 1) message = "Критический уровень";
+                        if (Manager.getName(player.getInventory().getItemInMainHand()).equals("Analyzer")) {
+                            var items = new ArrayList<ItemStack>();
+                            var analyzes = new ArrayList<Integer>();
+                            for (var item : player.getInventory()) {
+                                if (item == null) continue;
+                                var analyzeType = Manager.getIntegerFromContainer(item, "dirt_analyze");
+                                if (analyzeType != -1) {
+                                    analyzes.add(Manager.getIntegerFromContainer(item, "dirt_analyze"));
+                                    items.add(item);
+                                }
+                            }
 
-                        player.sendMessage("Счётчик Гейгера: " + Math.round(area.getProximityFactor(player) * 100d) / 100d + " (" + message + ")");
-                        player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CHAIN_PLACE, 1.0f, 1.0f);
+                            var uniqueGas = new HashSet<>(analyzes);
+                            if (area.isInRegion(player.getLocation())) {
+                                player.sendMessage("Слишком большие помехи");
+                                return;
+                            }
+
+                            if (uniqueGas.size() < area.getAnalyzeBlocks().size()) {
+                                player.sendMessage("Не хватает анализов: " + (area.getAnalyzeBlocks().size() - uniqueGas.size()));
+                                return;
+                            }
+
+                            Manager.takeItems(items, player);
+                            area.setCureBlock(SetupProps.CURE_BLOCKS.get(new Random().nextInt(SetupProps.CURE_BLOCKS.size())));
+                            if (area.isInRegion(player.getLocation()))
+                                player.sendMessage("Хихиканье уязвимо к: " + area.getCureBlock());
+                        }
+                        else {
+                            var value = Math.round(area.getProximityFactor(player) * 100d) / 100d;
+                            var message = "";
+                            if (value < .4) message = "Приемлемый уровень";
+                            else if (value >= .4 && value < .75) message = "Опасный уровень";
+                            else if (value >= .75 && value < 1) message = StringManager.getRandomNoiseMessage(new Random().nextInt(20));
+
+                            player.sendMessage("Счётчик Гейгера: " + Math.round(area.getProximityFactor(player) * 100d) / 100d + " (" + message + ")");
+                            player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CHAIN_PLACE, 1.0f, 1.0f);
+                        }
                     }
                     else if (player.getInventory().getItemInMainHand().getType() == Material.COMPASS) {
                         var analyzeBlocks = area.getAnalyzeBlocks();

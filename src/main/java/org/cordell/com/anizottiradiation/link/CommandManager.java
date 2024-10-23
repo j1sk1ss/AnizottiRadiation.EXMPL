@@ -115,38 +115,6 @@ public class CommandManager implements CommandExecutor {
                 player.sendMessage("Для лечения попробуйте: " + PlayerEventHandler.cureEffect + " " + PlayerEventHandler.cureItem);
             }
         }
-        else if (label.equalsIgnoreCase("find_cure_block")) {
-            var player = (Player)sender;
-            var items = new ArrayList<ItemStack>();
-            var analyzes = new ArrayList<Integer>();
-            for (var item : player.getInventory()) {
-                if (item == null) continue;
-
-                var analyzeType = Manager.getIntegerFromContainer(item, "dirt_analyze");
-                if (analyzeType != -1) {
-                    analyzes.add(Manager.getIntegerFromContainer(item, "dirt_analyze"));
-                    items.add(item);
-                }
-            }
-
-            var uniqueGas = new HashSet<>(analyzes);
-            for (var area : Radiation.areas) {
-                if (area.isInRegion(player.getLocation())) {
-                    player.sendMessage("Тут этого не сделать");
-                    continue;
-                }
-
-                if (uniqueGas.size() < area.getAnalyzeBlocks().size()) {
-                    player.sendMessage("Не хватает анализов: " + (area.getAnalyzeBlocks().size() - uniqueGas.size()));
-                    continue;
-                }
-
-                Manager.takeItems(items, player);
-                area.setCureBlock(SetupProps.CURE_BLOCKS.get(new Random().nextInt(SetupProps.CURE_BLOCKS.size())));
-                if (area.isInRegion(player.getLocation()))
-                    player.sendMessage("Зона убирается с помощью: " + area.getCureBlock());
-            }
-        }
 
         return false;
     }

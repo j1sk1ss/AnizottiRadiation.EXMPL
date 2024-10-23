@@ -11,6 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import org.cordell.com.anizottiradiation.common.ArmorManager;
+import org.cordell.com.anizottiradiation.common.LocationManager;
 import org.cordell.com.anizottiradiation.objects.Area;
 
 import org.j1sk1ss.itemmanager.manager.Manager;
@@ -84,6 +85,7 @@ public class Radiation {
             player.getWorld().playSound(player.getLocation(), Sound.AMBIENT_CAVE, 1.0f, 1.0f);
             player.getWorld().playSound(player.getLocation(), Sound.AMBIENT_SOUL_SAND_VALLEY_MOOD, 1.0f, 1.0f);
             player.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 300, 5));
+            player.setCompassTarget(LocationManager.randomLocation(player));
 
             if (!isDefence) {
                 player.damage(2 * proximityFactor);
@@ -143,7 +145,7 @@ public class Radiation {
             public void run() {
                 for (Area area : areas) area.growPlantsInArea();
             }
-        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("AnizottiRadiation")), 0, 1500);
+        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("AnizottiRadiation")), 0, 60);
     }
 
     public static void growZones() {

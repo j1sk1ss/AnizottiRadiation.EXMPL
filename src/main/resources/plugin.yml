@@ -12,9 +12,6 @@ commands:
   clear_infection:
     description: "Remove any infection from player"
     usage: "/clear_infection <name>"
-  find_cure_block:
-    description: "Find cure block of radiation area"
-    usage: "/find_cure_block"
   create_antidote:
     description: "Find antidote against radiation"
     usage: "/create_antidote"
