@@ -8,6 +8,11 @@ import java.util.Random;
 
 
 public class LocationManager {
+    public static boolean isHeadInBlock(Player player, Material material) {
+        var location = player.getLocation().add(0, 1, 0);
+        return location.getBlock().getType() == material;
+    }
+
     public static boolean isInBlock(Player player, Material material) {
         return player.getLocation().getBlock().getType() == material;
     }

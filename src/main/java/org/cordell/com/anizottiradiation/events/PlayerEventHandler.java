@@ -140,32 +140,7 @@ public class PlayerEventHandler implements Listener {
                 if (area.isInRegion(player.getLocation())) {
                     if (player.getInventory().getItemInMainHand().getType() == Material.BOOK) {
                         if (Manager.getName(player.getInventory().getItemInMainHand()).equals("Analyzer")) {
-                            var items = new ArrayList<ItemStack>();
-                            var analyzes = new ArrayList<Integer>();
-                            for (var item : player.getInventory()) {
-                                if (item == null) continue;
-                                var analyzeType = Manager.getIntegerFromContainer(item, "dirt_analyze");
-                                if (analyzeType != -1) {
-                                    analyzes.add(Manager.getIntegerFromContainer(item, "dirt_analyze"));
-                                    items.add(item);
-                                }
-                            }
-
-                            var uniqueGas = new HashSet<>(analyzes);
-                            if (area.isInRegion(player.getLocation())) {
-                                player.sendMessage("Слишком большие помехи");
-                                return;
-                            }
-
-                            if (uniqueGas.size() < area.getAnalyzeBlocks().size()) {
-                                player.sendMessage("Не хватает анализов: " + (area.getAnalyzeBlocks().size() - uniqueGas.size()));
-                                return;
-                            }
-
-                            Manager.takeItems(items, player);
-                            area.setCureBlock(SetupProps.CURE_BLOCKS.get(new Random().nextInt(SetupProps.CURE_BLOCKS.size())));
-                            if (area.isInRegion(player.getLocation()))
-                                player.sendMessage("Хихиканье уязвимо к: " + area.getCureBlock());
+                            player.sendMessage("Слишком большие помехи");
                         }
                         else {
                             var value = Math.round(area.getProximityFactor(player) * 100d) / 100d;
@@ -193,6 +168,33 @@ public class PlayerEventHandler implements Listener {
                         }
                         else {
                             player.sendMessage("Вы ниже <МАТЕРИАЛА> на " + (targetBlock.getLocation().getBlockY() - player.getLocation().getBlockY()));
+                        }
+                    }
+                }
+                else {
+                    if (player.getInventory().getItemInMainHand().getType() == Material.BOOK) {
+                        if (Manager.getName(player.getInventory().getItemInMainHand()).equals("Analyzer")) {
+                            var items = new ArrayList<ItemStack>();
+                            var analyzes = new ArrayList<Integer>();
+                            for (var item : player.getInventory()) {
+                                if (item == null) continue;
+                                var analyzeType = Manager.getIntegerFromContainer(item, "dirt_analyze");
+                                if (analyzeType != -1) {
+                                    analyzes.add(Manager.getIntegerFromContainer(item, "dirt_analyze"));
+                                    items.add(item);
+                                }
+                            }
+
+                            var uniqueGas = new HashSet<>(analyzes);
+                            if (uniqueGas.size() < area.getAnalyzeBlocks().size()) {
+                                player.sendMessage("Не хватает анализов: " + (area.getAnalyzeBlocks().size() - uniqueGas.size()));
+                                return;
+                            }
+
+                            Manager.takeItems(items, player);
+                            area.setCureBlock(SetupProps.CURE_BLOCKS.get(new Random().nextInt(SetupProps.CURE_BLOCKS.size())));
+                            if (area.isInRegion(player.getLocation()))
+                                player.sendMessage("Хихиканье уязвимо к: " + area.getCureBlock());
                         }
                     }
                 }

@@ -3,6 +3,7 @@ package org.cordell.com.anizottiradiation.events;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -34,8 +35,11 @@ public class Infection {
             return;
         }
 
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_SCREAM, 1.0f, 1.0f);
         player.sendMessage("Чувствую себя отвартительно");
+
         AnizottiRadiation.dataManager.setInt(player.getName(), infectionLevel);
+
         list.add(applyInfection(player));
         list.add(applyRadiationParticles(player));
         list.add(applyRadiationToNearby(player));

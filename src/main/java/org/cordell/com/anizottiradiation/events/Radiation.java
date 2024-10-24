@@ -42,9 +42,8 @@ public class Radiation {
         if (brokenCompassTasks.containsKey(player)) return;
 
         player.sendMessage("Навигация сбита из-за помех");
-        var task = Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
-            player.setCompassTarget(LocationManager.randomLocation(player));
-        }, 0, 10);
+        var task = Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(getServer().getPluginManager().getPlugin("AnizottiRadiation")), () ->
+                player.setCompassTarget(LocationManager.randomLocation(player)), 0, 10);
 
         brokenCompassTasks.put(player, task);
     }
@@ -119,8 +118,10 @@ public class Radiation {
             }
         }
         else {
-            brokenCompassTasks.get(player).cancel();
-            brokenCompassTasks.remove(player);
+            if (brokenCompassTasks.containsKey(player)) {
+                brokenCompassTasks.get(player).cancel();
+                brokenCompassTasks.remove(player);
+            }
         }
 
         try {
