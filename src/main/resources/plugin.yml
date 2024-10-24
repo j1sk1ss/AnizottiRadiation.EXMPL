@@ -15,3 +15,6 @@ commands:
   create_antidote:
     description: "Find antidote against radiation"
     usage: "/create_antidote"
+  find_cure_block:
+    description: "find_cure_block"
+    usage: "/find_cure_block"

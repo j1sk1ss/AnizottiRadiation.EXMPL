@@ -20,9 +20,11 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
+
 import org.cordell.com.anizottiradiation.AnizottiRadiation;
 import org.cordell.com.anizottiradiation.common.SetupProps;
 import org.cordell.com.anizottiradiation.common.StringManager;
+
 import org.j1sk1ss.itemmanager.manager.Item;
 import org.j1sk1ss.itemmanager.manager.Manager;
 
@@ -193,7 +195,7 @@ public class PlayerEventHandler implements Listener {
 
                             Manager.takeItems(items, player);
                             area.setCureBlock(SetupProps.CURE_BLOCKS.get(new Random().nextInt(SetupProps.CURE_BLOCKS.size())));
-                            if (area.isInRegion(player.getLocation()))
+                            if (!area.isInRegion(player.getLocation()))
                                 player.sendMessage("Хихиканье уязвимо к: " + area.getCureBlock());
                         }
                     }

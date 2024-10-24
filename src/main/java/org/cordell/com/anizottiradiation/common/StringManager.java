@@ -2,6 +2,7 @@ package org.cordell.com.anizottiradiation.common;
 
 import java.util.Random;
 
+
 public class StringManager {
     public static String getRandomNoiseMessage(int length) {
         var characters = "ABCDEFGHIJ#KL?.a!@#$%^&&*()_+-=OPQRST$UVWXYZab!cdefghi1jklmnopqrstuvwxyz";

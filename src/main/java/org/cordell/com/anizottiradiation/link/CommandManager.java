@@ -6,23 +6,22 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import org.bukkit.inventory.ItemStack;
+
 import org.cordell.com.anizottiradiation.AnizottiRadiation;
+import org.cordell.com.anizottiradiation.common.LocationConverter;
 import org.cordell.com.anizottiradiation.common.SetupProps;
 import org.cordell.com.anizottiradiation.events.Infection;
 import org.cordell.com.anizottiradiation.events.PlayerEventHandler;
+import org.cordell.com.anizottiradiation.events.Radiation;
+import org.cordell.com.anizottiradiation.objects.Area;
 import org.j1sk1ss.itemmanager.manager.Manager;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Random;
-
-import org.cordell.com.anizottiradiation.common.LocationConverter;
-import org.cordell.com.anizottiradiation.events.Radiation;
-import org.cordell.com.anizottiradiation.objects.Area;
 
 
 public class CommandManager implements CommandExecutor {
@@ -96,8 +95,22 @@ public class CommandManager implements CommandExecutor {
                 return true;
             }
         }
+        else if (label.equalsIgnoreCase("find_cure_block")) {
+            var player = (Player)sender;
+            for (var area : Radiation.areas) {
+                area.setCureBlock(SetupProps.CURE_BLOCKS.get(new Random().nextInt(SetupProps.CURE_BLOCKS.size())));
+                player.sendMessage("Хихиканье уязвимо к: " + area.getCureBlock());
+            }
+        }
         else if (label.equalsIgnoreCase("create_antidote")) {
             var player = (Player)sender;
+            for (var area : Radiation.areas) {
+                if (area.isInRegion(player.getLocation())) {
+                    player.sendMessage("Слишком много помех");
+                    return true;
+                }
+            }
+
             var analyzes = new ArrayList<ItemStack>();
             for (var item : player.getInventory()) {
                 if (item == null) continue;
@@ -113,6 +126,7 @@ public class CommandManager implements CommandExecutor {
 
                 Manager.takeItems(analyzes, player);
                 player.sendMessage("Для лечения попробуйте: " + PlayerEventHandler.cureEffect + " " + PlayerEventHandler.cureItem);
+                return true;
             }
         }
 

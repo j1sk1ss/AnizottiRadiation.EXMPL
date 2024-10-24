@@ -19,8 +19,6 @@ import org.j1sk1ss.itemmanager.manager.Manager;
 import java.io.IOException;
 import java.util.*;
 
-import static org.bukkit.Bukkit.getServer;
-
 
 public class Radiation {
     public static ArrayList<Area> areas = new ArrayList<>();
@@ -30,7 +28,7 @@ public class Radiation {
     public static final Map<Player, BukkitTask> brokenCompassTasks = new HashMap<>();
 
     public static void startRadiationEffect(Player player, Area area) {
-        var task = Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
+        var task = Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(Bukkit.getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
             if (!players.containsKey(player)) return;
             applyRadiation2Player(player, area.getProximityFactor(player));
         }, 0, 200);
@@ -42,7 +40,7 @@ public class Radiation {
         if (brokenCompassTasks.containsKey(player)) return;
 
         player.sendMessage("Навигация сбита из-за помех");
-        var task = Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(getServer().getPluginManager().getPlugin("AnizottiRadiation")), () ->
+        var task = Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(Bukkit.getServer().getPluginManager().getPlugin("AnizottiRadiation")), () ->
                 player.setCompassTarget(LocationManager.randomLocation(player)), 0, 10);
 
         brokenCompassTasks.put(player, task);

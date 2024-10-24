@@ -16,9 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.cordell.com.anizottiradiation.events.Radiation.endRadiationEffect;
-import static org.cordell.com.anizottiradiation.events.Radiation.startRadiationEffect;
-
 
 public class PlayerMoveHandler implements Listener {
     @EventHandler
@@ -29,7 +26,7 @@ public class PlayerMoveHandler implements Listener {
             if (area.isInRegion(player.getLocation())) {
                 if (!Radiation.players.containsKey(player)) {
                     Radiation.players.put(player, area);
-                    startRadiationEffect(player, area);
+                    Radiation.startRadiationEffect(player, area);
 
                     player.sendMessage("Не вышло?");
                     area.getHpBar().addPlayer(player);
@@ -57,13 +54,10 @@ public class PlayerMoveHandler implements Listener {
                 }
             }
             else {
-                if (Infection.infectedPlayers.containsKey(player)) {
-                    player.damage(.5);
-                }
-
+                if (Infection.infectedPlayers.containsKey(player)) player.damage(.5);
                 if (Radiation.players.containsKey(player)) {
                     Radiation.players.remove(player);
-                    endRadiationEffect(player);
+                    Radiation.endRadiationEffect(player);
 
                     player.sendMessage(Infection.infectedPlayers.containsKey(player) ? "Вернись" : "Что ты с моим радиоктивным фоном сделал?");
                     area.getHpBar().removePlayer(player);

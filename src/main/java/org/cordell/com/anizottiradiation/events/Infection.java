@@ -9,12 +9,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
+
 import org.cordell.com.anizottiradiation.AnizottiRadiation;
 
 import java.io.IOException;
 import java.util.*;
-
-import static org.bukkit.Bukkit.getServer;
 
 
 public class Infection {
@@ -48,7 +47,7 @@ public class Infection {
     }
 
     private static BukkitTask applyInfection(Player player) {
-        return Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
+        return Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(Bukkit.getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
             if (!infectedPlayers.containsKey(player)) return;
 
             int infectionLevel = infectedPlayers.get(player);
@@ -92,7 +91,7 @@ public class Infection {
     }
 
     private static BukkitTask applyRadiationParticles(Player player) {
-        return Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
+        return Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(Bukkit.getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
             if (!infectedPlayers.containsKey(player)) return;
 
             var location = player.getLocation();
@@ -104,7 +103,7 @@ public class Infection {
     }
 
     private static BukkitTask applyRadiationToNearby(Player infectedPlayer) {
-        return Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
+        return Bukkit.getScheduler().runTaskTimer(Objects.requireNonNull(Bukkit.getServer().getPluginManager().getPlugin("AnizottiRadiation")), () -> {
             for (var nearbyPlayer : infectedPlayer.getWorld().getPlayers()) {
                 if (nearbyPlayer == infectedPlayer) continue;
 

@@ -15,9 +15,12 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
 import org.cordell.com.anizottiradiation.AnizottiRadiation;
 import org.cordell.com.anizottiradiation.common.LocationConverter;
 import org.cordell.com.anizottiradiation.common.SetupProps;
+import org.cordell.com.anizottiradiation.events.Infection;
+import org.cordell.com.anizottiradiation.events.Radiation;
 
 import java.io.IOException;
 import java.util.*;
@@ -222,9 +225,18 @@ public class Area {
     }
 
     public void cleanUp() {
-        for (var player : Bukkit.getOnlinePlayers())
-            getHpBar().removePlayer(player);
+        for (var task : Radiation.radiationTasks.keySet()) Radiation.radiationTasks.get(task).cancel();
+        for (var task : Radiation.brokenCompassTasks.keySet()) Radiation.brokenCompassTasks.get(task).cancel();
+        for (var task : Infection.infectionTasks.keySet())
+            for (var ent : Infection.infectionTasks.get(task))
+                ent.cancel();
 
+        Radiation.radiationTasks.clear();
+        Radiation.brokenCompassTasks.clear();
+        Infection.infectionTasks.clear();
+        Infection.infectedPlayers.clear();
+
+        getHpBar().removeAll();
         for (var block : getAnalyzeBlocks())
             block.setType(Material.AIR);
     }
@@ -262,13 +274,12 @@ public class Area {
         }
     }
 
-
     private void defeatZone() {
         hpBar.setColor(BarColor.RED);
         for (var player : Bukkit.getServer().getOnlinePlayers())
             if (isInRegion(player.getLocation())) player.sendMessage("Вы победили зону!");
 
-        hpBar.removeAll();
+        cleanUp();
     }
 
     private static boolean canPlacePlant(Block block, Material plant) {
